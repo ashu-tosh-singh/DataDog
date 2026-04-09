@@ -1,33 +1,30 @@
-# 🚀 DevOps Monitoring System (Mini Datadog)
+# 🚀 DevOps Monitoring Dashboard (Mini Datadog)
 
-A full-stack **DevOps monitoring system** that collects real-time server metrics (CPU, memory, disk, containers) from an EC2 instance and visualizes them in a modern dashboard using Supabase and React.
+A full-stack **DevOps monitoring system** that collects real-time metrics from servers and visualizes them in a modern dashboard.
 
 ---
 
 ## 🧠 Overview
 
-This project simulates a lightweight version of tools like **Datadog / Grafana**:
+This project replicates core concepts of tools like **Datadog / Grafana**:
 
-* 🖥️ Agent runs on server (EC2)
-* 📡 Metrics are collected & pushed to Supabase
-* 🗄️ Supabase stores data (Postgres)
-* 📊 React dashboard visualizes metrics in real-time
+* 🖥️ Agent runs on EC2 (or any server)
+* 📡 Collects system + Docker metrics
+* 🔄 Sends data to Supabase (local)
+* 📊 React dashboard visualizes data in real-time
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-[EC2 Server]
-   └── Docker Monitoring Agent
-            ↓
-     (HTTP via SSH Tunnel)
-            ↓
-[Local Supabase]
-   └── Postgres Database
-            ↓
-[React Dashboard]
-   └── Visualization (Charts + UI)
+EC2 Server (Docker Agent)
+        ↓
+   SSH Reverse Tunnel
+        ↓
+ Local Supabase (Postgres)
+        ↓
+ React Dashboard (Vite + Tailwind)
 ```
 
 ---
@@ -36,43 +33,43 @@ This project simulates a lightweight version of tools like **Datadog / Grafana**
 
 ### 🔍 Monitoring
 
-* CPU usage tracking
-* Memory usage tracking
-* Disk usage tracking
+* CPU usage
+* Memory usage
+* Disk usage
 * Docker container status
 
 ### 📊 Dashboard
 
 * Modern dark UI (Tailwind)
 * Live updating charts
+* Global chart toggle (Line / Bar)
 * Stat cards (CPU, Memory, Disk)
-* Container status panel
 
 ### 🚨 Alerts (basic)
 
-* CPU threshold-based alerts
+* CPU threshold alerts
 * Stored in database
 
 ---
 
 ## 🧱 Tech Stack
 
-### Backend / Infra
+### Backend / Agent
 
-* Node.js (Agent)
-* Docker (Agent deployment)
-* systeminformation (metrics)
-* dockerode (container stats)
+* Node.js
+* Docker
+* `systeminformation`
+* `dockerode`
 
 ### Database / API
 
-* Supabase (Postgres + REST API)
+* Supabase (Postgres + REST)
 
 ### Frontend
 
 * React (Vite)
 * Tailwind CSS
-* Recharts (charts)
+* Recharts
 
 ---
 
@@ -80,23 +77,23 @@ This project simulates a lightweight version of tools like **Datadog / Grafana**
 
 ---
 
-### 1️⃣ Supabase (Local Setup)
+### 1️⃣ Supabase (Local)
 
 ```bash
 npx supabase init
 npx supabase start
 ```
 
-👉 Access:
+Access:
 
-* API: http://localhost:54321
-* Studio: http://localhost:54323
+* API → http://localhost:54321
+* Studio → http://localhost:54323
 
 ---
 
 ### 2️⃣ Database Schema
 
-Run in Supabase SQL Editor:
+Run in SQL Editor:
 
 ```sql
 create table metrics (
@@ -139,16 +136,7 @@ ubuntu@your-ec2-ip
 
 ### 4️⃣ Monitoring Agent (EC2)
 
-#### Install Docker
-
-```bash
-sudo apt update
-sudo apt install docker.io -y
-```
-
----
-
-#### Run Agent
+Run container:
 
 ```bash
 docker run -d \
@@ -163,8 +151,6 @@ docker run -d \
 ---
 
 ### 5️⃣ Environment Variables
-
-`.env` file:
 
 ```
 SUPABASE_URL=http://localhost:54321
@@ -181,52 +167,81 @@ npm install
 npm run dev
 ```
 
-👉 Open: http://localhost:5173
+Open:
+👉 http://localhost:5173
 
 ---
 
 ## 📊 Dashboard Features
 
 * 📈 CPU / Memory / Disk charts
-* ⚡ Auto-refresh (5s)
-* 🐳 Container status list
-* 🌙 Dark theme UI
+* 🔄 Auto-refresh (every 5 seconds)
+* 🎛 Global toggle (Line ↔ Bar)
+* 🧊 Modern glass UI
+* 📦 Container monitoring (optional)
+
+---
+
+## 🔄 Data Flow
+
+1. Agent collects metrics every 30 sec
+2. Sends data → Supabase
+3. React fetches data every 5 sec
+4. UI updates charts dynamically
+
+---
+
+## ⚠️ Important Fix (Live Data Issue)
+
+To always fetch latest data:
+
+```js
+.order("created_at", { ascending: false })
+.limit(50)
+```
+
+Then:
+
+```js
+setMetrics(data.reverse());
+```
 
 ---
 
 ## 🔐 Security Notes
 
-* Uses **publishable key (safe)**
-* Avoid using `service_role` key
+* Use **publishable key (safe for frontend)**
+* Do NOT expose `service_role` key
 * SSH tunnel prevents public exposure
 
 ---
 
 ## ⚠️ Known Limitations
 
-* Supabase running locally (not production)
-* No authentication in dashboard
-* Basic alerting system
+* Supabase runs locally (not production)
+* Polling-based updates (not realtime yet)
+* No authentication
 
 ---
 
 ## 🚀 Future Improvements
 
-* 🔴 Real-time updates (WebSockets)
-* 📊 Multi-server monitoring
-* 🔔 Slack / Email alerts
-* 📅 Time filters (1h, 24h)
-* 🌍 Deploy Supabase on EC2
-* 🔐 Authentication system
+* ⚡ Realtime updates (Supabase subscriptions)
+* 🔔 Email / Slack alerts
+* 🌍 Multi-server monitoring
+* 📅 Time filters (5m, 1h, 24h)
+* 🔐 Authentication (JWT / Supabase Auth)
+* ☁️ Deploy Supabase to cloud
 
 ---
 
-## 💡 Learnings
+## 💡 Key Learnings
 
-* Docker networking challenges
+* Docker networking issues (`host.docker.internal`, `host network`)
 * SSH reverse tunneling
-* Supabase RLS & API behavior
-* Observability system design
+* Supabase API usage
+* Real-time system design
+* Frontend data visualization
 
 ---
 
@@ -238,7 +253,7 @@ npm run dev
 
 ## 🧑‍💻 Author
 
-Built by **Ashutosh Singh**
+Ashutosh Singh
 DevOps Engineer 🚀
 
 ---
@@ -255,11 +270,11 @@ DevOps Engineer 🚀
 
 This project demonstrates:
 
-✔️ Real-world DevOps monitoring
-✔️ Distributed system design
-✔️ Full-stack implementation
-✔️ Production-like debugging skills
+✔️ End-to-end DevOps system
+✔️ Observability pipeline
+✔️ Full-stack development
+✔️ Real-world debugging
 
 ---
 
-⭐ If you like this project, consider starring it!
+⭐ Star this repo if you found it useful!
