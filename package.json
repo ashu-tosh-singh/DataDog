@@ -1,0 +1,11 @@
+{
+  "name": "monitor-agent",
+  "version": "1.0.0",
+  "main": "agent.js",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0",
+    "dockerode": "^3.3.0",
+    "dotenv": "^16.0.0",
+    "systeminformation": "^5.0.0"
+  }
+}
