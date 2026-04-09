@@ -120,8 +120,8 @@ async function sendData() {
   }
 }
 
-// Run every 30 seconds
-setInterval(sendData, 30000);
+// Run every 10 seconds
+setInterval(sendData, 10000);
 
 // Run immediately on start
 sendData();

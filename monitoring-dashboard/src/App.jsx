@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import ChartCard from "./components/ChartCard";
 
 export default function App() {
   const [metrics, setMetrics] = useState([]);
+  const [chartType, setChartType] = useState("line");
 
   useEffect(() => {
     fetchData();
@@ -34,65 +28,82 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 p-6 text-white">
       
       {/* HEADER */}
-      <h1 className="text-3xl font-bold mb-6">
-        🚀 DevOps Monitoring
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">
+          🚀 DevOps Monitoring
+        </h1>
+
+        {/* GLOBAL TOGGLE */}
+        <div className="flex bg-gray-800 rounded-lg p-1">
+          <button
+            onClick={() => setChartType("line")}
+            className={`px-4 py-1 text-sm rounded-md transition ${
+              chartType === "line"
+                ? "bg-purple-500 text-white"
+                : "text-gray-400"
+            }`}
+          >
+            Line
+          </button>
+
+          <button
+            onClick={() => setChartType("bar")}
+            className={`px-4 py-1 text-sm rounded-md transition ${
+              chartType === "bar"
+                ? "bg-purple-500 text-white"
+                : "text-gray-400"
+            }`}
+          >
+            Bar
+          </button>
+        </div>
+      </div>
 
       {/* STATS */}
       <div className="grid grid-cols-3 gap-6 mb-6">
-        <Card title="CPU Usage" value={latest.cpu_usage} color="text-purple-400" />
-        <Card title="Memory Usage" value={latest.memory_usage} color="text-green-400" />
-        <Card title="Disk Usage" value={latest.disk_usage} color="text-orange-400" />
+        <StatCard title="CPU Usage" value={latest.cpu_usage} color="text-purple-400" />
+        <StatCard title="Memory Usage" value={latest.memory_usage} color="text-green-400" />
+        <StatCard title="Disk Usage" value={latest.disk_usage} color="text-orange-400" />
       </div>
 
       {/* CHARTS */}
       <div className="grid grid-cols-3 gap-6">
-        <Chart title="CPU" data={metrics} dataKey="cpu_usage" stroke="#a855f7" />
-        <Chart title="Memory" data={metrics} dataKey="memory_usage" stroke="#22c55e" />
-        <Chart title="Disk" data={metrics} dataKey="disk_usage" stroke="#f97316" />
+        <ChartCard
+          title="CPU"
+          data={metrics}
+          dataKey="cpu_usage"
+          color="#a855f7"
+          chartType={chartType}
+        />
+
+        <ChartCard
+          title="Memory"
+          data={metrics}
+          dataKey="memory_usage"
+          color="#22c55e"
+          chartType={chartType}
+        />
+
+        <ChartCard
+          title="Disk"
+          data={metrics}
+          dataKey="disk_usage"
+          color="#f97316"
+          chartType={chartType}
+        />
       </div>
     </div>
   );
 }
 
 // 🔥 STAT CARD
-function Card({ title, value = 0, color }) {
+function StatCard({ title, value = 0, color }) {
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-lg hover:scale-105 transition">
       <p className="text-gray-400 text-sm">{title}</p>
       <h2 className={`text-4xl font-bold mt-2 ${color}`}>
         {Number(value || 0).toFixed(2)}%
       </h2>
-    </div>
-  );
-}
-
-// 📊 CHART
-function Chart({ title, data, dataKey, stroke }) {
-  return (
-    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-lg">
-      <h3 className="mb-3 text-lg text-gray-300">{title}</h3>
-
-      <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={data}>
-          <XAxis hide dataKey="created_at" />
-          <YAxis stroke="#888" />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#111",
-              border: "none",
-              borderRadius: "10px",
-            }}
-          />
-          <Line
-            type="monotone"
-            dataKey={dataKey}
-            stroke={stroke}
-            strokeWidth={3}
-            dot={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
     </div>
   );
 }
